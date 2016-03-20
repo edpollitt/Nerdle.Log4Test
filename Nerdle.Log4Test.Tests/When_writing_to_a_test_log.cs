@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FluentAssertions;
 using log4net;
 using log4net.Core;
@@ -20,22 +16,54 @@ namespace Nerdle.Log4Test.Tests
         {
             Log4TestConfigurator.Configure();
             _log = LogManager.GetLogger(GetType());
-        }
 
-        [SetUp]
-        public void BeforeEach()
-        {
-            //_log.Clear();
+            _log.Info("bork");
+            _log.WarnFormat("{0}", "dork");
+            _log.ErrorFormat("mork");
+            _log.Error("nork", new InvalidOperationException());
+            _log.Error("zork");
+            _log.Fatal("cork");
+            _log.FatalFormat("pork");
         }
 
         [Test]
-        public void The_log_contents_can_be_retrieved()
+        public void Log_events_can_be_examined()
         {
-            _log.Info("foo");
-            _log.WarnFormat("{0}", "bar");
-            _log.Error("baz", new InvalidOperationException());
+            _log.Events().Should().HaveCount(7);
+        }
 
-            _log.Contents().Should().HaveCount(3);
+        [Test]
+        public void Log_events_can_be_filtered_at_a_specified_level()
+        {
+            _log.Events().At(Level.Info).Should().HaveCount(1);
+            _log.Events().At(Level.Error).Should().HaveCount(3);
+            _log.Events().At(Level.Emergency).Should().BeEmpty();
+        }
+
+        [Test]
+        public void Log_events_can_be_filtered_above_a_specified_level()
+        {
+            _log.Events().Above(Level.Error).Should().OnlyContain(e => e.Level == Level.Fatal);
+        }
+
+        [Test]
+        public void Log_events_can_be_filtered_at_or_above_a_specified_level()
+        {
+            _log.Events().AtOrAbove(Level.Error).Should()
+                .OnlyContain(e => e.Level == Level.Error || e.Level == Level.Fatal);
+        }
+
+        [Test]
+        public void Log_events_can_be_filtered_below_a_specified_level()
+        {
+            _log.Events().Below(Level.Warn).Should().OnlyContain(e => e.Level == Level.Info);
+        }
+
+        [Test]
+        public void Log_events_can_be_filtered_at_or_below_a_specified_level()
+        {
+            _log.Events().AtOrBelow(Level.Warn).Should()
+                .OnlyContain(e => e.Level == Level.Warn || e.Level == Level.Info);
         }
 
         [Test]
@@ -49,9 +77,8 @@ namespace Nerdle.Log4Test.Tests
 
             fooLog.Clear();
 
-            fooLog.Contents().Should().BeEmpty();
-            barLog.Contents().Should().HaveCount(1);
+            fooLog.Events().Should().BeEmpty();
+            barLog.Events().Should().HaveCount(1);
         }
-
     }
 }

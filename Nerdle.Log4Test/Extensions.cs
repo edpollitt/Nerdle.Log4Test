@@ -22,9 +22,33 @@ namespace Nerdle.Log4Test
             return appender;
         }
 
-        public static IEnumerable<LoggingEvent> Contents(this ILog log)
+        public static IEnumerable<LoggingEvent> Events(this ILog log)
         {
             return GetAppender().GetEvents().Where(e => e.LoggerName == log.Logger.Name);
+        }
+
+        public static IEnumerable<LoggingEvent> At(this IEnumerable<LoggingEvent> events, Level logLevel)
+        {
+            return events.Where(e => e.Level == logLevel);
+        }
+        public static IEnumerable<LoggingEvent> AtOrAbove(this IEnumerable<LoggingEvent> events, Level logLevel)
+        {
+            return events.Where(e => e.Level >= logLevel);
+        }
+
+        public static IEnumerable<LoggingEvent> Above(this IEnumerable<LoggingEvent> events, Level logLevel)
+        {
+            return events.Where(e => e.Level > logLevel);
+        }
+
+        public static IEnumerable<LoggingEvent> AtOrBelow(this IEnumerable<LoggingEvent> events, Level logLevel)
+        {
+            return events.Where(e => e.Level <= logLevel);
+        }
+
+        public static IEnumerable<LoggingEvent> Below(this IEnumerable<LoggingEvent> events, Level logLevel)
+        {
+            return events.Where(e => e.Level < logLevel);
         }
 
         public static void Clear(this ILog log)
